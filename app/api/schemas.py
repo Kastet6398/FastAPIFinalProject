@@ -19,6 +19,7 @@ class AuthLogin(BaseModel):
     password: str = Field(min_length=settings.Settings.MIN_PASSWORD_LENGTH, examples=["732$!714RF1#721n"])
 
 class Recipe(BaseModel):
+    id: int = Field()
     name: str = Field(examples=['Yakiniku'])
     description: str = Field(examples=['A very tasty food!'])
     recipe: str = Field(examples=['1) ...\n2) ...\n3) ...'])

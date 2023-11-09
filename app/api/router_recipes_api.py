@@ -97,10 +97,9 @@ async def recipe(request: Request, recipe_id: int, user=Depends(dependencies.get
     
     
 
-@router.post('/search')
 @router.get('/menu')
 @router.post('/menu')
-async def get_menu(request: Request, sort: str = "", dish_name: str = "", 
+async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Query(""), 
     categories: List[int] = Query([]), page: int = 0, user=Depends(dependencies.get_current_user_optional)):
     recipes = []
     skip = page * settings.Settings.NUM_RECIPES_ON_PAGE
@@ -133,22 +132,30 @@ async def get_menu(request: Request, sort: str = "", dish_name: str = "",
     
         
     
-    return [Recipe(name=recipe[0].name, description=recipe[0].description, recipe=recipe[0].recipe, image=recipe[0].image, categories=recipe[0].categories, popularity=recipe[0].popularity) for recipe in recipes]
+    return [Recipe(id=recipe[0].id, name=recipe[0].name, description=recipe[0].description, recipe=recipe[0].recipe, image=recipe[0].image, categories=recipe[0].categories, popularity=recipe[0].popularity) for recipe in recipes]
     
 @router.get('/saved-recipes/')
 @router.post('/saved-recipes/')
-async def saved_recipes(request: Request, sort: str = "",
+async def saved_recipes(request: Request, sort: str = Query(""), dish_name: str = Query(""),
     categories: List[int] = Query([]), page: int = 0, user=Depends(dependencies.get_current_user_required)):
     
     skip = page * 10
     all_fetched_recipes = await dao.fetch_saved_recipes(user.id)
    
-    recipes = all_fetched_recipes
+    recipes = []
     if categories:
-        recipes = list(filter(lambda x: x[0].categories and set(x[0].categories).issubset(set(categories)), all_fetched_recipes))
+        filtered_recipes = list(filter(lambda x: x[0].categories and set(x[0].categories).issubset(set(categories)), all_fetched_recipes))
     else:
-        recipes = all_fetched_recipes
+        filtered_recipes = all_fetched_recipes
 
+    if re.sub(r"\s+", '', dish_name):
+        for dish in filtered_recipes:
+            if dish_name.lower() in dish[0].name.lower():
+                recipes.append(dish)
+    else:
+        recipes = filtered_recipes
+
+    
     
     if sort == "popularity-asc":
         recipes = sorted(recipes, key=lambda x: x[0].popularity)
@@ -162,7 +169,7 @@ async def saved_recipes(request: Request, sort: str = "",
     recipes = recipes[skip:skip + settings.Settings.NUM_RECIPES_ON_PAGE]
 
     
-    return [Recipe(name=recipe[0].name, description=recipe[0].description, recipe=recipe[0].recipe, image=recipe[0].image, categories=recipe[0].categories, popularity=recipe[0].popularity) for recipe in recipes]
+    return [Recipe(id=recipe[0].id, name=recipe[0].name, description=recipe[0].description, recipe=recipe[0].recipe, image=recipe[0].image, categories=recipe[0].categories, popularity=recipe[0].popularity) for recipe in recipes]
     
 
 

@@ -18,16 +18,33 @@ router = APIRouter(
 
 templates = Jinja2Templates(directory='app\\templates')
 
-
-@router.post('/search')
-@router.get('/search')
 @router.get('/menu')
 @router.post('/menu')
-async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Form(""), 
+async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Query(""),
+    saved: bool = Query(False),
     categories: List[int] = Query([]), page: int = Query(0), user=Depends(dependencies.get_current_user_optional)):
+    if saved:
+        if user:
+            all_fetched_recipes = await dao.fetch_saved_recipes(user.id)
+        else:
+            status_code = status.HTTP_403_FORBIDDEN
+            context = {
+                'request': request,
+                'title': 'User error',
+                'content': 'You must be logged in to view saved recipes.',
+                'code': status_code,
+                'user': user,
+            }
+
+            return templates.TemplateResponse(
+                '400.html',
+                context=context,
+                status_code=status_code
+            )
+    else:
+        all_fetched_recipes = await dao.fetch_recipes()
     recipes = []
     skip = page * settings.Settings.NUM_RECIPES_ON_PAGE
-    all_fetched_recipes = await dao.fetch_recipes()
     filtered_recipes = []
     context = {
         'request': request,
@@ -35,14 +52,15 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = For
         'categories': await dao.fetch_categories(),
         'page': page,
         'sort': sort,
-        'page': page,
-        'title': 'All recipes'
+        'title': ('Saved' if saved else 'All') + ' recipes',
+        'dish_name': dish_name,
+        'saved': saved,
+        'selected_categories': categories
     }
 
     if categories:
         filtered_recipes = list(filter(lambda x: x[0].categories and set(x[0].categories).issubset(set(categories)), all_fetched_recipes))
-        context['title'] = f'Recipes with categor{"ies" if len(categories) > 1 else "y"} {", ".join([(await dao.get_category_by_id(id)).name for id in categories])}'
-        context['checked'] = categories
+        context['title'] =  ('Saved recipes' if saved else 'Recipes') + f' with categor{"ies" if len(categories) > 1 else "y"} {", ".join([(await dao.get_category_by_id(id)).name for id in categories])}'
     else:
         filtered_recipes = all_fetched_recipes
 
@@ -51,7 +69,7 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = For
         for dish in filtered_recipes:
             if dish_name.lower() in dish[0].name.lower():
                 recipes.append(dish)
-        context['title'] = f'{dish_name} search results' if re.sub(r"\s+", '', dish_name) else 'Recipes'
+        context['title'] = f'{dish_name} search results' + (' in saved recipes' if saved else '')
     else:
         recipes = filtered_recipes
 
@@ -82,73 +100,6 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = For
         'menu.html',
         context=context,
     )
-    
-@router.get('/saved-recipes/')
-@router.post('/saved-recipes/')
-async def saved_recipes(request: Request, sort: str = Query(""),
-    categories: List[int] = Query([]), page: int = Query(0), user=Depends(dependencies.get_current_user_optional)):
-    
-    if user:
-        recipes = []
-        skip = page * 10
-        all_fetched_recipes = await dao.fetch_saved_recipes(user.id)
-        filtered_recipes = []
-        context = {
-            'request': request,
-            'user': user,
-            'categories': await dao.fetch_categories(),
-            'page': page,
-            'sort': sort,
-            'page': page,
-            'title': 'All saved recipes'
-        }
-        if categories:
-            recipes = list(filter(lambda x: x[0].categories and set(x[0].categories).issubset(set(categories)), all_fetched_recipes))
-            context['title'] = f'Recipes with categor{"ies" if len(categories) > 1 else "y"} {", ".join([(await dao.get_category_by_id(id)).name for id in categories])}'
-            context['checked'] = categories
-        else:
-            recipes = all_fetched_recipes
-
-        
-        if sort == "popularity-asc":
-            recipes = sorted(recipes, key=lambda x: x[0].popularity)
-        elif sort == "popularity-desc":
-            recipes = sorted(recipes, key=lambda x: x[0].popularity, reverse=True)
-        elif sort == "a-z":
-            recipes = sorted(recipes, key=lambda x: x[0].name.lower())
-        elif sort == "z-a":
-            recipes = sorted(recipes, key=lambda x: x[0].name.lower(), reverse=True)
-
-        recipes = recipes[skip:skip + settings.Settings.NUM_RECIPES_ON_PAGE]
-
-        
-        
-        context['menu'] = recipes
-        context['previous_page'] = page - 1
-        
-        if skip < len(recipes) // settings.Settings.NUM_RECIPES_ON_PAGE:
-            context['next_page'] = page + 1
-        
-        
-        return templates.TemplateResponse(
-            'menu.html',
-            context=context,
-        )
-    status_code = status.HTTP_403_FORBIDDEN
-    context = {
-        'request': request,
-        'title': 'User error',
-        'content': 'You must be logged in to view saved recipes.',
-        'code': status_code,
-        'user': user,
-    }
-
-    return templates.TemplateResponse(
-        '400.html',
-        context=context,
-        status_code=status_code
-    )
-    
 
     
 @router.post('/create-recipe-final')
@@ -663,7 +614,7 @@ async def save_recipe(request: Request, recipe_id: int, user=Depends(dependencie
             )
         await dao.save_recipe(recipe_id, user.id)
         
-        return RedirectResponse("/saved-recipes/")
+        return RedirectResponse("/menu?saved=True")
     status_code = status.HTTP_403_FORBIDDEN
     context = {
         'request': request,
@@ -698,7 +649,7 @@ async def unsave_recipe(request: Request, recipe_id: int, user=Depends(dependenc
             )
         await dao.unsave_recipe(recipe_id, user.id)
         
-        return RedirectResponse("/saved-recipes/")
+        return RedirectResponse("/menu?saved=True")
     status_code = status.HTTP_403_FORBIDDEN
     context = {
         'request': request,

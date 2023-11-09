@@ -15,85 +15,89 @@
     {% block title %}
     {% endblock %}
 
-<style>.input-group-prepend{border-radius:initial;}</style>
 </head>
 <body>
-		<div class="header">
-			<nav class="navbar navbar-expand-lg bg-body-tertiary">
-				<div class="container-fluid">
+	<div class="header">
+		<nav class="navbar navbar-expand-lg bg-body-tertiary">
+			<div class="container-fluid">
+				<a href="/menu" class="not-link" style="text-decoration: none; color: initial">
+				<img src="{{ url_for('static', path='favicon.ico') }}" alt="" width="50" height="50"></a>
+				<div class="navbar-brand"><h3><a href="/menu" class="not-link" style="text-decoration: none; color: initial">BoneRecipies</a></h3></div>
 
-					<img src="{{ url_for('static', path='favicon.ico') }}" alt="" width="50" height="50">
-					<div class="navbar-brand"><h3>BoneRecipies</h3></div>
-
-					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-							aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="navbar-toggler-icon"></span>
-					</button>
-					<div class="collapse navbar-collapse" id="navbarSupportedContent">
-						<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-							<li class="nav-item">
-								<a class="nav-link active" aria-current="page" href="/menu">Recipies</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/about-us">About&nbsp;us</a>
-							</li>
-							{% if user %}
-								<li class="nav-item dropdown">
-									<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-									   aria-expanded="false">
-										More actions
-									</a>
-									<ul class="dropdown-menu">
-										<li>
-											<a class="dropdown-item" href="/saved-recipes">View saved recipes</a>
-										</li>
-										<li>
-											<a class="dropdown-item" href="/message">Write a message</a>
-										</li>
-										<li>
-											<a class="dropdown-item" href="/create-recipe">Create recipe</a>
-										</li>
-										<li>
-											<hr class="dropdown-divider">
-										</li>
-										<li>
-											<a class="dropdown-item" style="color: red;" href="/delete-my-account">Delete my acccount</a>
-										</li>
-									</ul>
-								</li>
-							{% endif %}
-							{% if user %}
-								<li class="nav-item">
-									<a class="nav-link" href="/logout">Logout</a>
-								</li>
-							{% else %}
-								<li class="nav-item">
-									<a class="nav-link" href="/login">Login</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" href="/register">Register</a>
-								</li>
-							{% endif %}
-						</ul>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+						aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						<li class="nav-item">
+							<a class="nav-link active" aria-current="page" href="/menu">Recipies</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/about-us">About&nbsp;us</a>
+						</li>
 						{% if user %}
-							<span style="padding-right: 20px;">Hello, {{ user.login }}!</span>
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+									aria-expanded="false">
+									More actions
+								</a>
+								<ul class="dropdown-menu">
+									<li>
+										<a class="dropdown-item" href="/menu?saved=True">View saved recipes</a>
+									</li>
+									<li>
+										<a class="dropdown-item" href="/message">Write a message</a>
+									</li>
+									<li>
+										<a class="dropdown-item" href="/create-recipe">Create recipe</a>
+									</li>
+									<li>
+										<hr class="dropdown-divider">
+									</li>
+									<li>
+										<a class="dropdown-item" style="color: red;" href="/delete-my-account">Delete my acccount</a>
+									</li>
+								</ul>
+							</li>
 						{% endif %}
+						{% if user %}
+							<li class="nav-item">
+								<a class="nav-link" href="/logout">Logout</a>
+							</li>
+						{% else %}
+							<li class="nav-item">
+								<a class="nav-link" href="/login">Login</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="/register">Register</a>
+							</li>
+						{% endif %}
+					</ul>
+					{% if user %}
+						<span style="padding-right: 20px;">Hello, {{ user.name }}!</span>
+					{% endif %}
+					
+					<form class="d-flex" role="search" method="get" action="/menu">
+						<input class="form-control me-2" type="search" name="dish_name" value="{{ dish_name }}" placeholder="Enter dish name..."
+								aria-label="Search" required>
+								<input type="hidden" name="saved" value="{{ saved }}">
+								<input type="hidden" name="sort" value="{{ sort }}">
+						{% for i in selected_categories %}
+						<input type="hidden" name="categories" value="{{ i }}">
+						{% endfor %}
 						
-						<form class="d-flex" role="search" method="post" action="/search">
-							<input class="form-control me-2" type="search" name="dish_name" placeholder="Enter dish name..."
-								   aria-label="Search" required>
-							<button class="btn btn-outline-success" type="submit">Search</button>
-						</form>
-					</div>
+						<button class="btn btn-outline-success" type="submit">Search</button>
+					</form>
 				</div>
-			</nav>
-		</div>
-		<div class="toast-container position-absolute end-0 p-3" style="z-index: 11">
-		</div>
-        <div class="content">
-            {% block content %}{% endblock content %}
-        </div>
-
+			</div>
+		</nav>
+	</div>
+	<div class="toast-container position-absolute end-0 p-3" style="z-index: 11">
+	</div>
+	<div class="content">
+		{% block content %}{% endblock content %}
+	</div>
 
     <script>
 		function showToast(message) {
@@ -165,7 +169,7 @@
 				$('#password-container i').addClass( 'bi-eye' );
 			}
 		}
-		document.querySelector("a[href*='" + location.pathname + "']").classList.add("current-link");
+		document.querySelector("a[href*='" + location.pathname + "']:not(.not-link)").classList.add("current-link");
     </script>
 
 </body>

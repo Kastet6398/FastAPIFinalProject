@@ -5,7 +5,6 @@
     {% endblock %}
 
 
-
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -23,11 +22,12 @@
             </select>
         </div>
 		{% if categories %}
-            <p>Categories</p>
+			<br>
+            <label>Categories</label>
 				<ul class="sidebar-elements">
 					{% for category in categories %}
 						<li class="sidebar-element">
-							<input class="form-check-input pointer-cursor" type="checkbox"{% if category[0].id in checked %} checked{% endif %} id="{{ category[0].id }}" name="categories" value="{{ category[0].id }}" />
+							<input class="form-check-input pointer-cursor" type="checkbox"{% if category[0].id in selected_categories %} checked{% endif %} id="{{ category[0].id }}" name="categories" value="{{ category[0].id }}" />
 							<label class="pointer-cursor" for="{{ category[0].id }}">{{ category[0].name }}</label>
 					    </li>
 					{% endfor %}
@@ -35,6 +35,8 @@
 		{% endif %}
 		<br>
 				<button type="submit" class="btn btn-outline-info">Apply</button>
+				<input type="hidden" name="dish_name" value="{{ dish_name }}">
+				<input type="hidden" name="saved" value="{{ saved }}">
 		    </form>
         </nav>
 
@@ -71,7 +73,7 @@
 									{% endfor %}
 								</div>
 							</div>
-						</div><img src="{{ recipe[0].image }}" alt="" class="recipe-image" style="width: 20vw; height: 20vw; float: left;">
+						</div><a href="/recipe/{{ recipe[0].id }}"><img src="{{ recipe[0].image }}" alt="" class="recipe-image" style="width: 20vw; height: 20vw; float: left;"></a>
 						
 					</div>
 				{% endfor %}
@@ -84,11 +86,11 @@
 	<br>
 	<br>
 
-	<button onclick="location.href='?page={{ previous_page }}&sort={{ sort }}'" {% if previous_page < 0 %}disabled{% endif %} class="btn btn-primary" style="margin:2px">Previous page</button>
+	<button onclick="location.href='?page={{ previous_page }}&sort={{ sort }}&dish_name={{ dish_name }}'" {% if previous_page < 0 %}disabled{% endif %} class="btn btn-primary" style="margin:2px">Previous page</button>
 
 	{{ page + 1 }}
 	
-	<button onclick="location.href='?page={{ next_page }}&sort={{ sort }}'" {% if not next_page %}disabled{% endif %} class="btn btn-primary" style="margin:2px">Next page</button>
+	<button onclick="location.href='?page={{ next_page }}&sort={{ sort }}&dish_name={{ dish_name }}'" {% if not next_page %}disabled{% endif %} class="btn btn-primary" style="margin:2px">Next page</button>
 
         </div>
     </div>
