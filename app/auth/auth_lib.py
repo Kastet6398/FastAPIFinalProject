@@ -1,13 +1,12 @@
-import jwt
-
-from fastapi import HTTPException, Security, status, Request
-from passlib.context import CryptContext
 from datetime import datetime, timedelta
 
+import jwt
+from fastapi import HTTPException, status
+from passlib.context import CryptContext
 from pydantic import EmailStr
 
-import settings
 import dao
+import settings
 
 
 class AuthHandler:
@@ -56,8 +55,8 @@ class AuthHandler:
         except jwt.InvalidTokenError:
             return {}
 
-class AuthLibrary:
 
+class AuthLibrary:
     @classmethod
     async def authenticate_user(cls, login: EmailStr, password: str):
         user = await dao.get_user_by_login(login)

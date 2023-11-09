@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.web_pages import router_web_pages
-from app.sockets import router_websocket
+
 from app.api import router_api
+from app.sockets import router_websocket
+from app.web_pages import router_web_pages
 
 app = FastAPI(
     title='BoneRecipes',

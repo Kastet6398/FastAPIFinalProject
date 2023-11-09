@@ -1,6 +1,4 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-import json
-from app.auth import dependencies
 
 
 class ConnectionManager:
@@ -24,8 +22,6 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-
-
 router = APIRouter(
     prefix='/ws',
 )
@@ -33,19 +29,9 @@ router = APIRouter(
 
 @router.websocket('/')
 async def websocket_endpoint(websocket: WebSocket):
-    # await websocket.accept()
-    # while True:
-    #     text = await websocket.receive_text()
-    #     await websocket.send_text(f'Your text: {text}')
-    #     # await websocket.send_json(json.dumps({'count': 5}))
-
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            # await manager.send_personal_message(f"You wrote: {data}", websocket)
-            # print(data)
-            await manager.broadcast(f" says: {data}")
+            await manager.broadcast(f" says: {await websocket.receive_text()}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        # await manager.broadcast(f"Client #{client_id} left the chat")

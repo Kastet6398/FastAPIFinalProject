@@ -1,15 +1,16 @@
-from fastapi import APIRouter, UploadFile, Query, Depends, Request, Form, HTTPException, status
+import re
+from typing import List
+
+from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Request,
+                     status)
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
-import re
+
 import dao
 import settings
-from app.auth.auth_lib import AuthHandler, AuthLibrary
-import settings
 from app.auth import dependencies
-from typing import List
-
+from app.auth.auth_lib import AuthHandler, AuthLibrary
 
 router = APIRouter(
     tags=['menu', 'landing'],
@@ -18,11 +19,17 @@ router = APIRouter(
 
 templates = Jinja2Templates(directory='app\\templates')
 
+
 @router.get('/menu')
 @router.post('/menu')
-async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Query(""),
-    saved: bool = Query(False),
-    categories: List[int] = Query([]), page: int = Query(0), user=Depends(dependencies.get_current_user_optional)):
+async def get_menu(request: Request,
+                   sort: str = Query(""),
+                   dish_name: str = Query(""),
+                   saved: bool = Query(False),
+                   categories: List[int] = Query([]),
+                   page: int = Query(0),
+                   user=Depends(dependencies.get_current_user_optional)
+                   ):
     if saved:
         if user:
             all_fetched_recipes = await dao.fetch_saved_recipes(user.id)
@@ -46,10 +53,11 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Que
     recipes = []
     skip = page * settings.Settings.NUM_RECIPES_ON_PAGE
     filtered_recipes = []
+    fetched_categories = await dao.fetch_categories()
     context = {
         'request': request,
         'user': user,
-        'categories': await dao.fetch_categories(),
+        'categories': fetched_categories,
         'page': page,
         'sort': sort,
         'title': ('Saved' if saved else 'All') + ' recipes',
@@ -59,8 +67,11 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Que
     }
 
     if categories:
-        filtered_recipes = list(filter(lambda x: x[0].categories and set(x[0].categories).issubset(set(categories)), all_fetched_recipes))
-        context['title'] =  ('Saved recipes' if saved else 'Recipes') + f' with categor{"ies" if len(categories) > 1 else "y"} {", ".join([(await dao.get_category_by_id(id)).name for id in categories])}'
+        filtered_recipes = list(filter(
+            lambda x: x[0].categories and set(x[0].categories).issubset(set(categories)),
+            all_fetched_recipes))
+        context['title'] = ('Saved recipes' if saved else 'Recipes')\
+            + f' with categor{"ies" if len(categories) > 1 else "y"} {", ".join([fetched_categories[id - 1][0].name for id in categories])}'
     else:
         filtered_recipes = all_fetched_recipes
 
@@ -73,7 +84,6 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Que
     else:
         recipes = filtered_recipes
 
-    
     if sort == "popularity-asc":
         recipes = sorted(recipes, key=lambda x: x[0].popularity)
     elif sort == "popularity-desc":
@@ -85,23 +95,18 @@ async def get_menu(request: Request, sort: str = Query(""), dish_name: str = Que
 
     recipes = recipes[skip:skip + settings.Settings.NUM_RECIPES_ON_PAGE]
 
-    
-        
-    
     context['menu'] = recipes
     context['previous_page'] = page - 1
-    
+
     if skip < len(recipes) // settings.Settings.NUM_RECIPES_ON_PAGE:
         context['next_page'] = page + 1
-    
-    
-    
+
     return templates.TemplateResponse(
         'menu.html',
         context=context,
     )
 
-    
+
 @router.post('/create-recipe-final')
 async def create_recipe_final(
     request: Request,
@@ -129,7 +134,13 @@ async def create_recipe_final(
                 context=context,
                 status_code=status_code
             )
-        recipe_id = (await dao.create_recipe(name=name, description=description, image=image, recipe=recipe, categories=categories, creator_id=user.id)).id
+        recipe_id = (await dao.create_recipe(
+            name=name,
+            description=description,
+            image=image,
+            recipe=recipe,
+            categories=categories,
+            creator_id=user.id)).id
 
         return RedirectResponse(f"/recipe/{recipe_id}")
 
@@ -147,6 +158,7 @@ async def create_recipe_final(
         context=context,
         status_code=status_code
     )
+
 
 @router.post('/update-recipe-final')
 async def update_recipe_final(
@@ -192,7 +204,6 @@ async def update_recipe_final(
                 context=context,
                 status_code=status_code
             )
-            
 
         if (recipe_exists := (await dao.get_recipe_by_name(name))) and recipe_exists.id != recipe_id:
             status_code = status.HTTP_406_NOT_ACCEPTABLE
@@ -209,7 +220,14 @@ async def update_recipe_final(
                 context=context,
                 status_code=status_code
             )
-        await dao.update_recipe(name=name, description=description, image=image, recipe=recipe, categories=categories, recipe_id=recipe_id)
+        await dao.update_recipe(
+            name=name,
+            description=description,
+            image=image,
+            recipe=recipe,
+            categories=categories,
+            recipe_id=recipe_id
+            )
 
         return RedirectResponse(f"/recipe/{recipe_id}")
 
@@ -227,6 +245,7 @@ async def update_recipe_final(
         context=context,
         status_code=status_code
     )
+
 
 @router.get('/create-recipe')
 async def create_recipe(request: Request, user=Depends(dependencies.get_current_user_optional)):
@@ -257,10 +276,10 @@ async def create_recipe(request: Request, user=Depends(dependencies.get_current_
         status_code=status_code
     )
 
+
 @router.get('/update-recipe/{recipe_id}')
 async def update_recipe(request: Request, recipe_id: int, user=Depends(dependencies.get_current_user_optional)):
     if user:
-
         if not (recipe_object := await dao.get_recipe_by_id(recipe_id)):
             status_code = status.HTTP_404_NOT_FOUND
             context = {
@@ -292,7 +311,7 @@ async def update_recipe(request: Request, recipe_id: int, user=Depends(dependenc
                 context=context,
                 status_code=status_code
             )
-            
+
         context = {
             'request': request,
             'recipe': recipe_object,
@@ -320,13 +339,14 @@ async def update_recipe(request: Request, recipe_id: int, user=Depends(dependenc
         status_code=status_code
     )
 
+
 @router.get('/recipe/{id}')
 @router.post('/recipe/{id}')
 async def recipe(request: Request, id: int, user=Depends(dependencies.get_current_user_optional)):
     recipe = await dao.get_recipe_by_id(id)
     if not recipe:
         status_code = status.HTTP_404_NOT_FOUND
-        
+
         context = {
             'request': request,
             'title': 'Recipe error',
@@ -354,6 +374,7 @@ async def recipe(request: Request, id: int, user=Depends(dependencies.get_curren
         context=context,
     )
 
+
 @router.get('/about-us')
 async def about_us(request: Request, user=Depends(dependencies.get_current_user_optional)):
     context = {
@@ -366,6 +387,7 @@ async def about_us(request: Request, user=Depends(dependencies.get_current_user_
         'about_us.html',
         context=context,
     )
+
 
 @router.get('/message')
 async def message(request: Request, user=Depends(dependencies.get_current_user_optional)):
@@ -395,6 +417,7 @@ async def message(request: Request, user=Depends(dependencies.get_current_user_o
         status_code=status_code
     )
 
+
 @router.get('/register')
 async def register(request: Request, user=Depends(dependencies.get_current_user_optional)):
     if user:
@@ -412,6 +435,7 @@ async def register(request: Request, user=Depends(dependencies.get_current_user_
         context=context,
     )
 
+
 @router.get('/login')
 async def login(request: Request, user=Depends(dependencies.get_current_user_optional)):
     if user:
@@ -427,7 +451,8 @@ async def login(request: Request, user=Depends(dependencies.get_current_user_opt
         'login.html',
         context=context,
     )
-    
+
+
 @router.get('/delete-my-account')
 async def delete_my_account(request: Request, user=Depends(dependencies.get_current_user_optional)):
     if user:
@@ -455,9 +480,9 @@ async def delete_my_account(request: Request, user=Depends(dependencies.get_curr
         status_code=status_code
     )
 
+
 @router.get('/delete-my-account-final')
-async def delete_my_account_final(request: Request,
-                         user=Depends(dependencies.get_current_user_optional)):
+async def delete_my_account_final(request: Request, user=Depends(dependencies.get_current_user_optional)):
     if user:
         await dao.delete_user(user.id)
         return RedirectResponse("/menu/")
@@ -475,11 +500,11 @@ async def delete_my_account_final(request: Request,
         context=context,
         status_code=status_code
     )
-    
+
+
 @router.get('/delete-recipe/{recipe_id}')
 async def delete_recipe(request: Request, recipe_id: int, user=Depends(dependencies.get_current_user_optional)):
     if user:
-
         if not (recipe_object := await dao.get_recipe_by_id(recipe_id)):
             status_code = status.HTTP_404_NOT_FOUND
             context = {
@@ -521,7 +546,7 @@ async def delete_recipe(request: Request, recipe_id: int, user=Depends(dependenc
             'delete_recipe.html',
             context=context
         )
-        
+
     status_code = status.HTTP_403_FORBIDDEN
     context = {
         'request': request,
@@ -536,13 +561,15 @@ async def delete_recipe(request: Request, recipe_id: int, user=Depends(dependenc
         context=context,
         status_code=status_code
     )
-    
-@router.get('/delete-recipe-final/{recipe_id}')
-async def delete_recipe_final(request: Request,
-                         recipe_id: int,
-                         user=Depends(dependencies.get_current_user_optional)):
-    if user:
 
+
+@router.get('/delete-recipe-final/{recipe_id}')
+async def delete_recipe_final(
+    request: Request,
+    recipe_id: int,
+    user=Depends(dependencies.get_current_user_optional)
+):
+    if user:
         if not (recipe_object := await dao.get_recipe_by_id(recipe_id)):
             status_code = status.HTTP_404_NOT_FOUND
             context = {
@@ -576,7 +603,7 @@ async def delete_recipe_final(request: Request,
             )
         await dao.delete_recipe(recipe_id)
         return RedirectResponse("/menu/")
-        
+
     status_code = status.HTTP_403_FORBIDDEN
     context = {
         'request': request,
@@ -596,7 +623,6 @@ async def delete_recipe_final(request: Request,
 @router.get('/save-recipe/{recipe_id}')
 async def save_recipe(request: Request, recipe_id: int, user=Depends(dependencies.get_current_user_optional)):
     if user:
-
         if not await dao.get_recipe_by_id(recipe_id):
             status_code = status.HTTP_404_NOT_FOUND
             context = {
@@ -613,8 +639,8 @@ async def save_recipe(request: Request, recipe_id: int, user=Depends(dependencie
                 status_code=status_code
             )
         await dao.save_recipe(recipe_id, user.id)
-        
         return RedirectResponse("/menu?saved=True")
+
     status_code = status.HTTP_403_FORBIDDEN
     context = {
         'request': request,
@@ -629,6 +655,8 @@ async def save_recipe(request: Request, recipe_id: int, user=Depends(dependencie
         context=context,
         status_code=status_code
     )
+
+
 @router.get('/unsave-recipe/{recipe_id}')
 async def unsave_recipe(request: Request, recipe_id: int, user=Depends(dependencies.get_current_user_optional)):
     if user:
@@ -648,8 +676,8 @@ async def unsave_recipe(request: Request, recipe_id: int, user=Depends(dependenc
                 status_code=status_code
             )
         await dao.unsave_recipe(recipe_id, user.id)
-        
         return RedirectResponse("/menu?saved=True")
+
     status_code = status.HTTP_403_FORBIDDEN
     context = {
         'request': request,
@@ -672,7 +700,9 @@ async def register_final(request: Request,
                          login: str = Form(),
                          email: EmailStr = Form(),
                          notes: str = Form(default=''),
-                         password: str = Form(), user=Depends(dependencies.get_current_user_optional)):
+                         password: str = Form(),
+                         user=Depends(dependencies.get_current_user_optional)
+                         ):
     if re.search(r"\s", login):
         status_code = status.HTTP_406_NOT_ACCEPTABLE
         context = {
@@ -688,8 +718,10 @@ async def register_final(request: Request,
             context=context,
             status_code=status_code
         )
+
     if user:
         return RedirectResponse("/menu/")
+
     is_login_already_used = await dao.get_user_by_login(login)
     if is_login_already_used:
         status_code = status.HTTP_406_NOT_ACCEPTABLE
@@ -706,6 +738,7 @@ async def register_final(request: Request,
             context=context,
             status_code=status_code
         )
+
     is_email_already_used = await dao.get_user_by_email(email)
     if is_email_already_used:
         status_code = status.HTTP_406_NOT_ACCEPTABLE
@@ -722,6 +755,7 @@ async def register_final(request: Request,
             context=context,
             status_code=status_code
         )
+
     hashed_password = await AuthHandler.get_password_hash(password)
 
     user_data = await dao.create_user(
@@ -734,17 +768,21 @@ async def register_final(request: Request,
 
     token = await AuthHandler.encode_token(user_data[0])
 
-    template_response = RedirectResponse("/menu")
-    
-    template_response.set_cookie(key='token', value=token, httponly=True, max_age=1000)
-    
-    return template_response
+    redirect_response = RedirectResponse("/menu")
+
+    redirect_response.set_cookie(key='token', value=token, httponly=True, max_age=1000)
+
+    return redirect_response
+
 
 @router.post('/login-final')
-async def login_final(request: Request,
-                         login: str = Form(),
-                         password: str = Form(), user=Depends(dependencies.get_current_user_optional)):
-    response =  RedirectResponse("/menu/")
+async def login_final(
+    request: Request,
+    login: str = Form(),
+    password: str = Form(),
+    user=Depends(dependencies.get_current_user_optional)
+):
+    response = RedirectResponse("/menu/")
     if not user:
         try:
             logged_in_user = await AuthLibrary.authenticate_user(login=login, password=password)
@@ -763,15 +801,15 @@ async def login_final(request: Request,
                 context=context,
                 status_code=status_code
             )
-        
+
         token = await AuthHandler.encode_token(logged_in_user.id)
         response.set_cookie(key='token', value=token, httponly=True, max_age=1000)
-        
+
     return response
-        
+
+
 @router.get('/logout')
 async def logout(request: Request):
-    response=RedirectResponse('/menu/')
+    response = RedirectResponse('/menu/')
     response.delete_cookie('token')
-    return response    
-
+    return response

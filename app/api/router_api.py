@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from . import router_auth_api, router_recipes_api
 
+from . import router_auth_api, router_recipes_api
 
 router = APIRouter(
     prefix='/api',

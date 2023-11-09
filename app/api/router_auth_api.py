@@ -1,11 +1,10 @@
-from fastapi import APIRouter, status, HTTPException, Request, Response, Depends
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from app.auth.auth_lib import AuthHandler, AuthLibrary
-from .schemas import AuthDetails, AuthRegistered, AuthLogin
 import dao
 from app.auth import dependencies
+from app.auth.auth_lib import AuthHandler, AuthLibrary
 
-
+from .schemas import AuthDetails, AuthLogin, AuthRegistered
 
 router = APIRouter(
     prefix='/auth',
@@ -14,9 +13,7 @@ router = APIRouter(
 
 
 @router.post('/register', response_model=AuthRegistered, status_code=status.HTTP_201_CREATED)
-async def register_api(request: Request, response: Response, auth_details: AuthDetails):
-
-
+async def register_api(response: Response, auth_details: AuthDetails):
     is_login_already_used = await dao.get_user_by_login(auth_details.login)
     if is_login_already_used:
         raise HTTPException(
@@ -39,13 +36,13 @@ async def register_api(request: Request, response: Response, auth_details: AuthD
 
     return AuthRegistered(success=True, id=user_data[0], login=user_data[1])
 
+
 @router.get('/delete-my-account')
-async def delete_my_account_api(request: Request,
-                         user=Depends(dependencies.get_current_user_required)):
-    
+async def delete_my_account_api(user=Depends(dependencies.get_current_user_required)):
     await dao.delete_user(user.id)
     return {"account_deleted": True}
-    
+
+
 @router.post('/login')
 async def login_api(response: Response, user_data: AuthLogin):
     user = await AuthLibrary.authenticate_user(user_data.login, user_data.password)
@@ -53,7 +50,8 @@ async def login_api(response: Response, user_data: AuthLogin):
     response.set_cookie(key='token', value=token, httponly=True, max_age=1000)
     return {'user': user.login, "logged_in": True}
 
+
 @router.get('/logout')
-async def logout_api(response: Response, user=Depends(dependencies.get_current_user_required)):
+async def logout_api(response: Response):
     response.delete_cookie('token')
     return {"logged_out": True}

@@ -1,7 +1,8 @@
-from fastapi import Request, HTTPException, status, Depends
+from fastapi import Depends, HTTPException, Request, status
 
-from app.auth import auth_lib
 import dao
+from app.auth import auth_lib
+
 
 async def get_token(request: Request):
     token = request.cookies.get('token')

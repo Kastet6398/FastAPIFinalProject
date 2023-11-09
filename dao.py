@@ -1,15 +1,26 @@
-import asyncio
-
-from sqlalchemy import text, insert, select, update, delete
+from sqlalchemy import delete, insert, select, text, update
 
 from database import async_session_maker
-from models import User, Recipe, Category
-from enum import Enum
+from models import Category, Recipe, User
 
 
-async def create_user(name: str, login: str, email: str, password: str, notes: str = '', is_conflict: bool = False):
+async def create_user(
+        name: str,
+        login: str,
+        email: str,
+        password: str,
+        notes: str = '',
+        is_conflict: bool = False
+        ):
     async with async_session_maker() as session:
-        query = insert(User).values(name=name, login=login, email=email, password=password, notes=notes, is_conflict=is_conflict).returning(User.id, User.login)
+        query = insert(User).values(
+            name=name,
+            login=login,
+            email=email,
+            password=password,
+            notes=notes,
+            is_conflict=is_conflict
+            ).returning(User.id, User.login)
         data = await session.execute(query)
         await session.commit()
         return data.fetchone()
@@ -30,18 +41,45 @@ async def create_category(name: str):
         return data.fetchone()
 
 
-async def create_recipe(name: str, description: str, recipe: str, image: str, creator_id: int, categories: list = []):
+async def create_recipe(
+        name: str,
+        description: str,
+        recipe: str,
+        image: str,
+        creator_id: int,
+        categories: list = []
+        ):
     async with async_session_maker() as session:
-        query = insert(Recipe).values(name=name, description=description, recipe=recipe, image=image, categories=categories, creator_id=creator_id).returning(Recipe.id, Recipe.name)
+        query = insert(Recipe).values(
+            name=name,
+            description=description,
+            recipe=recipe,
+            image=image,
+            categories=categories,
+            creator_id=creator_id
+            ).returning(Recipe.id, Recipe.name)
         data = await session.execute(query)
         await session.commit()
         return data.fetchone()
 
 
-async def update_recipe(recipe_id: int, name: str, description: str, recipe: str, image: str = "", categories: list = []):
+async def update_recipe(
+        recipe_id: int,
+        name: str,
+        description: str,
+        recipe: str,
+        image: str = "",
+        categories: list = []
+        ):
     async with async_session_maker() as session:
-        query = update(Recipe).where(Recipe.id == recipe_id).values(name=name, description=description, recipe=recipe, image=image, categories=categories)
-        data = await session.execute(query)
+        query = update(Recipe).where(Recipe.id == recipe_id).values(
+            name=name,
+            description=description,
+            recipe=recipe,
+            image=image,
+            categories=categories
+            )
+        await session.execute(query)
         await session.commit()
 
 
@@ -50,28 +88,28 @@ async def get_user_by_id(user_id: int):
         query = select(User).filter_by(id=user_id)
         result = await session.execute(query)
         return result.scalar_one_or_none()
-    
+
 
 async def get_user_by_login(user_login: str):
     async with async_session_maker() as session:
         query = select(User).filter_by(login=user_login)
         result = await session.execute(query)
         return result.scalar_one_or_none()
-    
+
 
 async def get_recipe_by_id(recipe_id: str):
     async with async_session_maker() as session:
         query = select(Recipe).filter_by(id=recipe_id)
         result = await session.execute(query)
         return result.scalar_one_or_none()
-    
+
 
 async def get_recipe_by_name(recipe_name: str):
     async with async_session_maker() as session:
         query = select(Recipe).filter_by(name=recipe_name)
         result = await session.execute(query)
         return result.scalar_one_or_none()
-    
+
 
 async def get_category_by_id(category_id: str):
     async with async_session_maker() as session:
@@ -82,28 +120,21 @@ async def get_category_by_id(category_id: str):
 
 async def save_recipe(recipe_id: int, saver_id: int):
     async with async_session_maker() as session:
-        query = update(
-            Recipe
-        ).where(
-            Recipe.id==recipe_id
-        ).values(saver_ids=text(f'array_append(saver_ids, :saver_id)'))
-            
-        await session.execute(query,
-        {"saver_id": saver_id})
+        query = update(Recipe).where(Recipe.id == recipe_id).values(
+            saver_ids=text('array_append(saver_ids, :saver_id)')
+            )
+        await session.execute(query, {"saver_id": saver_id})
         await session.commit()
+
 
 async def unsave_recipe(recipe_id: int, saver_id: int):
     async with async_session_maker() as session:
-        query = update(
-            Recipe
-        ).where(
-            Recipe.id==recipe_id
-        ).values(saver_ids=text(f'array_remove(saver_ids, :saver_id)'))
-            
-        await session.execute(query,
-        {"saver_id": saver_id})
+        query = update(Recipe).where(Recipe.id == recipe_id).values(
+            saver_ids=text('array_remove(saver_ids, :saver_id)')
+            )
+        await session.execute(query, {"saver_id": saver_id})
         await session.commit()
-        
+
 
 async def update_user(user_id: int):
     async with async_session_maker() as session:
@@ -115,7 +146,9 @@ async def update_user(user_id: int):
 async def increase_recipe_popularity(recipe_id: int):
     async with async_session_maker() as session:
         popularity = (await get_recipe_by_id(recipe_id)).popularity
-        query = update(Recipe).where(Recipe.id == recipe_id).values(popularity=(popularity if popularity else 0) + 1)
+        query = update(Recipe).where(Recipe.id == recipe_id).values(
+            popularity=(popularity if popularity else 0) + 1
+            )
         await session.execute(query)
         await session.commit()
 

@@ -1,11 +1,8 @@
-from sqlalchemy import (
-    Column, ARRAY, Integer, Float, String, DateTime, Boolean, ForeignKey,
-)
-from sqlalchemy.dialects.postgresql import JSONB
+import datetime
+
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, Integer, String
 
 from database import Base
-
-import datetime
 
 
 class BaseInfoMixin:
@@ -42,10 +39,9 @@ class Recipe(Base):
     popularity = Column(Integer, default=0)
     saver_ids = Column(ARRAY(Integer), default=[])
 
-
     def __repr__(self):
         return f'Recipe {self.name} {self.id}'
-        
+
 
 class Category(Base):
     __tablename__ = "category"
@@ -53,7 +49,5 @@ class Category(Base):
     name = Column(String, nullable=False, unique=True)
     id = Column(Integer, primary_key=True)
 
-
     def __repr__(self):
         return f'Category {self.name} {self.id}'
-        
