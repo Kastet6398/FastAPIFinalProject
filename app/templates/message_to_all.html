@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>{{ title }}</title>
+{% endblock %}
+
+
+{% block content %}
+<form class="row g-3" method="get" onsubmit="sendMessage(event);">
+
+    <div class="mb-3">
+      <label for="messageText" class="form-label">{{ title }}</label>
+      
+	  
+	        <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-chat-left-dots"></i></div>
+         <textarea class="form-control" id="messageText" rows="3" required minlength="5"></textarea>
+	  
+
+      </div>
+    </div>
+
+    <button class="btn btn-outline-success" type="submit">Send message</button>
+
+
+</form>
+
+
+{% endblock %}

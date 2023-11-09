@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>{{ title }}</title>
+{% endblock %}
+
+
+{% block content %}
+
+<form method="post" action="/login-final">
+	
+    <div class="mb-3">
+      <label for="login" class="form-label">Login <span style="color: red; font-size: 120%;">*</span>:</label>
+      <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-at"></i></div>
+        <input name="login" type="text"  class="form-control" id="login" required placeholder="my_login">
+
+      </div>
+      
+    </div>
+
+        <div class="mb-3">
+		<label for="password" class="form-label">Password <span style="color: red; font-size: 120%;">*</span>:</label>
+		<div class="input-group mb-3">
+			<div class="input-group mb-2" id="password-container">
+				<div class="input-group-text"><i class="bi bi-lock"></i></div>
+				<input name="password" autocomplete="current-password" id="password" type="password"  class="form-control" placeholder="053|~@mj6Et5" required minlength="{{ min_password_length }}">
+			   
+				<div class="input-group-text"><i onclick="togglePasswordVisibility(event);" style="cursor:pointer;" class="bi bi-eye-slash"></i></div>
+					
+			</div>
+    </div>
+
+		</div>
+
+    <button class="btn btn-outline-success" type="submit">Login</button>
+
+
+</form>
+
+
+
+
+{% endblock %}

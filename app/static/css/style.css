@@ -1,0 +1,145 @@
+.error-code {
+    color: gray;
+    padding-left: 20px;
+    float: right;
+}
+
+.header {
+    position: sticky;
+	width: auto;
+    top: 0;
+    z-index: 9999999999999999;
+}
+
+.add {
+	float: right
+}
+
+footer {
+    background: #333;
+}
+
+footer {
+    padding-right: 40px;
+}
+
+footer {
+    padding-right: 40px;
+    background-color: #333;
+	
+    color: #fff;
+}
+
+@media screen and (max-width: 850px) and (min-width: 620px) {
+
+    footer {
+        padding-right: 100px;
+    }
+    .footer-column {
+        flex-basis: 50%;
+    }
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.footer-main {
+    flex-basis: 100%;
+}footer a {
+    font-size: medium;
+    display: block;
+    margin-bottom: 10px;
+    color: #fff;
+    text-decoration: none;
+}footer .footer-main {
+    font-weight: 550 !important;
+    font-size: max(min(7vw, 60px), 20px);
+}
+.content {
+    flex: 1;
+	width: auto;
+    padding: 20px;
+}
+
+.container {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.col {
+    text-align: left;
+}
+
+.sidebar {
+    height: fit-content;
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.current-link {
+    background: #333 !important;
+    color: white !important;
+}
+
+.sidebar-elements {
+    list-style: none;
+    padding: 0;
+}
+
+.pointer-cursor {
+    cursor: pointer;
+}
+
+.col.col-3 {
+    width: 33%;
+  }
+  
+  ::placeholder {
+    color: black !important;
+    opacity: .3 !important;
+  }
+  
+  ::-ms-input-placeholder {
+    color: black !important;
+    opacity: .3 !important;
+  }
+
+.sidebar-element {
+    margin-bottom: 10px;
+}
+
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.content * {
+    font-size: 1.01em;
+}
+
+ul {
+    padding-left: 0;
+    list-style-type: none;
+}
+
+pre {
+    white-space: -o-pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: var(--bs-font-sans-serif);
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--bs-heading-color);
+    overflow: hidden;
+}

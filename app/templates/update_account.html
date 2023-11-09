@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>{{ title }}</title>
+{% endblock %}
+
+
+{% block content %}
+
+<form method="post" action="/update-account-final">
+
+    <div class="mb-3">
+      <label for="login" class="form-label">Login <span style="color: red; font-size: 120%;">*</span>:</label>
+      <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-at"></i></div>
+        <input name="login" type="text"  class="form-control" id="login" required placeholder="my_login" value="{{ user.login }}">
+
+      </div>	  	  <small class="text-muted">
+		  Must not contain spaces.
+	  </small>
+      
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Email <span style="color: red; font-size: 120%;">*</span>:</label>
+	  <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-envelope"></i></div>
+        <input name="email" type="email"  class="form-control" id="email" required placeholder="name@example.com" value="{{ user.email }}">
+
+      </div>
+	  
+	  
+      
+    <small  class="text-muted">
+		  Please, provide your real email address. We promise not to share it with anyone and not to send you spam.
+	  </small> 
+	</div>
+
+        <div class="mb-3">
+		<label for="password" class="form-label">Password <span style="color: red; font-size: 120%;">*</span>:</label>
+		<div class="input-group mb-3">
+			<div class="input-group mb-2" id="password-container">
+				<div class="input-group-text"><i class="bi bi-lock"></i></div>
+				<input name="password" id="password" type="password"  class="form-control" placeholder="053|~@mj6Et5" value="{{ user.password }}" required minlength="{{ min_password_length }}">
+			   
+				<div class="input-group-text"><i onclick="togglePasswordVisibility(event);" style="cursor:pointer;" class="bi bi-eye-slash"></i></div>
+					
+			</div>
+	  
+	  
+	  
+          
+<small class="text-muted">
+		  Create a strong password. Must be at least {{ min_password_length }} characters long.
+	  </small>
+    </div>
+
+		</div>
+        <div class="mb-3">
+      <label for="name" class="form-label">Name <span style="color: red; font-size: 120%;">*</span>:</label>
+      <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-person"></i></div>
+         <input name="name" type="text"  class="form-control" id="name" placeholder="Barak Obama" required minlength="3" value="{{ user.name }}">
+
+      </div>
+	  
+	  
+	 
+<small  class="text-muted">
+		  Must be at least 3 characters long.
+	  </small> 
+    </div>
+           <div class="mb-3">
+      <label for="notes" class="form-label">Notes:</label>
+	        <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-card-text"></i></div>
+        <textarea name="notes" type="text"  class="form-control" id="notes" placeholder="You can call me simply Barak." maxlength="{{ max_notes_length }}">{{ user.notes }}</textarea>
+
+      </div>
+<small  class="text-muted">
+		  Write a short description of you or something we want to know about you. Field isn't required. Maximum {{ max_notes_length }} characters.
+	  </small> 
+	  
+	  
+	  
+      
+    </div>
+
+    <button class="btn btn-outline-success" type="submit">Register</button>
+
+
+</form>
+
+
+
+{% endblock %}

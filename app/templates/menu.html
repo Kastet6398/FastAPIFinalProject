@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+    {% block title %}
+    <title>{{ title }}</title>
+    {% endblock %}
+
+
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 sidebar">
+			<form method="get" action="#">
+		<p>Filter</p>
+		<div class="form-group">
+            <label for="sort">Sort by</label>
+            <select class="selectpicker show-tick" id="sort" name="sort">
+                <option value="popularity-asc"{% if sort == "popularity-asc" %} selected{% endif %}>Popularity ascending</option>
+                <option value="popularity-desc"{% if sort == "popularity-desc" %} selected{% endif %}>Popularity descending</option>
+                <option value="a-z"{% if sort == "a-z" %} selected{% endif %}>From A to Z</option>
+				<option value="z-a"{% if sort == "z-a" %} selected{% endif %}>From Z to A</option>
+                <option value=""{% if sort == "" %} selected{% endif %}>By default</option>
+            </select>
+        </div>
+		{% if categories %}
+            <p>Categories</p>
+				<ul class="sidebar-elements">
+					{% for category in categories %}
+						<li class="sidebar-element">
+							<input class="form-check-input pointer-cursor" type="checkbox"{% if category[0].id in checked %} checked{% endif %} id="{{ category[0].id }}" name="categories" value="{{ category[0].id }}" />
+							<label class="pointer-cursor" for="{{ category[0].id }}">{{ category[0].name }}</label>
+					    </li>
+					{% endfor %}
+				</ul>
+		{% endif %}
+		<br>
+				<button type="submit" class="btn btn-outline-info">Apply</button>
+		    </form>
+        </nav>
+
+        <div class="col-md-9">
+			{% if user %}
+				<a href="/create-recipe" class="btn btn-outline-info add">+</a>
+			{% endif %}
+		<br>
+        <p>{{ title }}</p>
+		<hr>
+
+    {% if menu %}
+		<div class="container-fluid">
+			<div class="row">
+				{% for recipe in menu %}
+					<div class="col" style="width: max(33.33333333333%, 100vw);
+					flex: 0 0 0;max-width: max(33.333%, 100vw);box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.2); margin-top: 20px; margin-left: 10px; border-radius: 10px; padding-top: 20px; padding-bottom: 20px;">
+
+						<a href="/recipe/{{ recipe[0].id }}">
+							<p>{{ recipe[0].name }}</p>
+						</a>
+						{% if user %}<a href="/{% if user.id in recipe[0].saver_ids %}un{% endif %}save-recipe/{{ recipe[0].id }}" class="btn btn-success"><i class="bi bi-bookmark-{% if user.id in recipe[0].saver_ids %}dash{% else %}plus{% endif %}"></i></a>{% if user.is_superuser or recipe[0].creator_id == user.id %}<a href="/delete-recipe/{{ recipe[0].id }}" class="btn btn-danger"><i class="bi bi-trash"></i></a><a href="/update-recipe/{{ recipe[0].id }}" class="btn btn-success"><i class="bi bi-pencil"></i></a>{% endif %}{% endif %}
+
+						<p>Popularity: {{ recipe[0].popularity or 0 }}</p>
+						<div class="container-fluid">
+							<div class="row">
+								<div>
+									{% for category in recipe[0].categories %}
+										{% for i in categories %}
+											{% if category == i[0].id %}
+												<a href="?categories={{ category }}" class="btn btn-primary" style="margin:2px">{{ i[0].name }}</a>
+											{% endif %}
+										{% endfor %}
+									{% endfor %}
+								</div>
+							</div>
+						</div><img src="{{ recipe[0].image }}" alt="" class="recipe-image" style="width: 20vw; height: 20vw; float: left;">
+						
+					</div>
+				{% endfor %}
+			</div>
+        </div>
+    {% else %}
+            <p>Nothing here...</p>
+    {% endif %}
+	
+	<br>
+	<br>
+
+	<button onclick="location.href='?page={{ previous_page }}&sort={{ sort }}'" {% if previous_page < 0 %}disabled{% endif %} class="btn btn-primary" style="margin:2px">Previous page</button>
+
+	{{ page + 1 }}
+	
+	<button onclick="location.href='?page={{ next_page }}&sort={{ sort }}'" {% if not next_page %}disabled{% endif %} class="btn btn-primary" style="margin:2px">Next page</button>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

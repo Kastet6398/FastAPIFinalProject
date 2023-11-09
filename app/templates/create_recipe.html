@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>{{ title }}</title>
+{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" action="/create-recipe-final">
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Name <span style="color: red; font-size: 120%;">*</span>:</label>
+        <input name="name" type="text" class="form-control" id="name" required placeholder="Rice with vegetables">
+    </div>
+	
+    <div class="mb-3">
+        <label for="description" class="form-label">Description <span style="color: red; font-size: 120%;">*</span>:</label>	        <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-card-text"></i></div>
+      <input name="description" type="text" class="form-control" id="description" required placeholder="A very tasty food!">
+      </div>
+       
+    </div>
+    <div class="mb-3">
+        <label for="recipe" class="form-label">Recipe <span style="color: red; font-size: 120%;">*</span>:</label>
+         <div class="input-group mb-2"> <div class="input-group-text"><i class="bi bi-list-ol"></i></div>
+      <textarea rows="6" name="recipe" type="text" class="form-control" id="recipe" required placeholder="HA-HA-HA!!!"></textarea>
+      </div>
+		
+		
+    </div>
+	
+    <div class="mb-3">
+        <label for="image" class="form-label">Image URL:</label>
+        	        <div class="input-group mb-2">
+        <div class="input-group-text"><i class="bi bi-card-image"></i></div>
+        <input type="url" name="image" id="image" class="form-control" accept="image/*">
+   
+      </div>
+		 <small  class="text-muted">
+		  Please provide a real URL with the image of this recipe. Not required.
+	  </small> 
+	  
+	</div>
+	
+    <div class="mb-3">
+        <label class="form-label">Categories:</label>
+		{% for category in categories %}
+			<input class="form-check-input pointer-cursor" type="checkbox" id="{{ category[0].id }}" name="categories" value="{{ category[0].id }}" />
+			<label class="pointer-cursor" for="{{ category[0].id }}">{{ category[0].name }}</label>
+		{% else %}
+			Sorry, no categories available yet.
+		{% endfor %}
+    </div>
+
+    <button class="btn btn-outline-success" type="submit">Create recipe</button>
+</form>
+{% endblock %}

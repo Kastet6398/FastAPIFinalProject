@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+    {% block title %}
+    <title>{{ title }}</title>
+    {% endblock %}
+
+
+
+{% block content %}
+
+{% if user %}<a href="/{% if user.id in recipe.saver_ids %}un{% endif %}save-recipe/{{ recipe.id }}" style="float:right" class="btn btn-success"><i class="bi bi-bookmark-{% if user.id in recipe.saver_ids %}dash{% else %}plus{% endif %}"></i></a>{% if user.is_admin or recipe.creator_id == user.id %}<a href="/delete-recipe/{{ recipe.id }}" style="float:right; margin-right:10px;" class="btn btn-danger"><i class="bi bi-trash"></i></a><a href="/update-recipe/{{ recipe.id }}" style="float:right; margin-right:10px;" class="btn btn-success"><i class="bi bi-pencil"></i></a>{% endif %}{% endif %}
+
+	<a href>
+		<p class="h1">{{ recipe.name }}</p>
+	</a>
+	{% for category in recipe.categories %}
+	{% for i in categories %}
+		{% if category == i[0].id %}
+			<a href="/menu?categories={{ category }}" class="btn btn-primary" style="margin:2px">{{ i[0].name }}</a>
+		{% endif %}
+	{% endfor %}
+	{% endfor %}	<hr>
+	<img src="{{ recipe.image }}" alt="" class="recipe-image" style="width: 20vw; height: 20vw;">
+	<p class="h4">Description: {{ recipe.description }}</p>
+	<p class="h4">Popularity: {{ recipe.popularity }}</p>
+	<hr>
+	<pre>{{ recipe.recipe|safe }}</pre>
+
+{% endblock %}
